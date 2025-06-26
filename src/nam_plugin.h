@@ -5,8 +5,6 @@
 #include <cstdint>
 #include <random>
 #include <string_view>
-#include <vector>
-#include <filesystem>
 
 // LV2
 #include <lv2/core/lv2.h>
@@ -55,15 +53,14 @@ namespace NAM {
 
 	class Plugin {
 	public:
-        struct Ports {
-                const LV2_Atom_Sequence* control;
-                LV2_Atom_Sequence* notify;
-                const float* audio_in;
-                float* audio_out;
-                float* input_level;
-                float* output_level;
-                float* model_select;
-        };
+		struct Ports {
+			const LV2_Atom_Sequence* control;
+			LV2_Atom_Sequence* notify;
+			const float* audio_in;
+			float* audio_out;
+			float* input_level;
+			float* output_level;
+		};
 
 		Ports ports = {};
 
@@ -73,13 +70,10 @@ namespace NAM {
 		LV2_Log_Logger logger = {};
 		LV2_Worker_Schedule* schedule = nullptr;
 
-                NeuralAudio::NeuralModel* currentModel = nullptr;
-                std::string currentModelPath;
-                std::vector<std::string> modelList;
-                int currentModelIndex = -1;
-                int prevModelSelect = -1;
-                float prevDCInput = 0;
-                float prevDCOutput = 0;
+		NeuralAudio::NeuralModel* currentModel = nullptr;
+		std::string currentModelPath;
+		float prevDCInput = 0;
+		float prevDCOutput = 0;
 
 		Plugin();
 		~Plugin();
@@ -88,8 +82,7 @@ namespace NAM {
 		void set_max_buffer_size(int size) noexcept;
 		void process(uint32_t n_samples) noexcept;
 
-                void write_current_path();
-                void scan_model_directory(const std::string& path);
+		void write_current_path();
 
 		static uint32_t options_get(LV2_Handle instance, LV2_Options_Option* options);
 		static uint32_t options_set(LV2_Handle instance, const LV2_Options_Option* options);
