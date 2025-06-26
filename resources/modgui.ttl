@@ -17,9 +17,5 @@
             lv2:index 1;
             lv2:symbol "output_level";
             lv2:name "Output Lvl";
-        ], [
-            lv2:index 2;
-            lv2:symbol "model_select";
-            lv2:name "Model Select";
         ];
     ].

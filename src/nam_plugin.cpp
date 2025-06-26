@@ -2,8 +2,6 @@
 #include <cmath>
 #include <utility>
 #include <cassert>
-#include <cstring>
-#include <filesystem>
 
 #include "nam_plugin.h"
 
@@ -179,16 +177,15 @@ namespace NAM {
 		LV2FreeModelMsg reply = { kWorkTypeFree, nam->currentModel };
 
 		// swap current model with new one
-                nam->currentModel = msg->model;
-                nam->currentModelPath = msg->path;
-                assert(nam->currentModelPath.capacity() >= MAX_FILE_NAME + 1);
-                nam->scan_model_directory(nam->currentModelPath);
+		nam->currentModel = msg->model;
+		nam->currentModelPath = msg->path;
+		assert(nam->currentModelPath.capacity() >= MAX_FILE_NAME + 1);
 
 		// send reply
 		nam->schedule->schedule_work(nam->schedule->handle, sizeof(reply), &reply);
 
 		// report change to host/ui
-                nam->write_current_path();
+		nam->write_current_path();
 
 		return LV2_WORKER_SUCCESS;
 	}
@@ -205,10 +202,10 @@ namespace NAM {
 		lv2_atom_forge_set_buffer(&atom_forge, (uint8_t*)ports.notify, ports.notify->atom.size);
 		lv2_atom_forge_sequence_head(&atom_forge, &sequence_frame, uris.units_frame);
 
-                LV2_ATOM_SEQUENCE_FOREACH(ports.control, event)
-                {
-                        if (event->body.type == uris.atom_Object)
-                        {
+		LV2_ATOM_SEQUENCE_FOREACH(ports.control, event)
+		{
+			if (event->body.type == uris.atom_Object)
+			{
 				const auto obj = reinterpret_cast<LV2_Atom_Object*>(&event->body);
 				if (obj->body.otype == uris.patch_Get)
 				{
@@ -232,25 +229,9 @@ namespace NAM {
 						LV2LoadModelMsg msg = { kWorkTypeLoad, {} };
 						memcpy(msg.path, file_path + 1, file_path->size);
 						schedule->schedule_work(schedule->handle, sizeof(msg), &msg);
-                                }
-                        }
-                }
-
-                // MIDI-selectable model index
-                if (ports.model_select && !modelList.empty())
-                {
-                        int idx = static_cast<int>(*ports.model_select + 0.5f);
-                        if (idx >= 0 && idx < (int)modelList.size() && idx != prevModelSelect)
-                        {
-                                prevModelSelect = idx;
-                                currentModelIndex = idx;
-
-                                LV2LoadModelMsg msg = { kWorkTypeLoad, {} };
-                                strncpy(msg.path, modelList[idx].c_str(), MAX_FILE_NAME);
-                                msg.path[MAX_FILE_NAME - 1] = '\0';
-                                schedule->schedule_work(schedule->handle, sizeof(msg), &msg);
-                        }
-                }
+					}
+				}
+			}
 		}
 
 		float level;
@@ -477,8 +458,8 @@ namespace NAM {
 		return result;
 	}
 
-        void Plugin::write_current_path()
-        {
+	void Plugin::write_current_path()
+	{
 		LV2_Atom_Forge_Frame frame;
 
 		lv2_atom_forge_frame_time(&atom_forge, 0);
@@ -487,48 +468,8 @@ namespace NAM {
 		lv2_atom_forge_key(&atom_forge, uris.patch_property);
 		lv2_atom_forge_urid(&atom_forge, uris.model_Path);
 		lv2_atom_forge_key(&atom_forge, uris.patch_value);
-                lv2_atom_forge_path(&atom_forge, currentModelPath.c_str(), (uint32_t)currentModelPath.length() + 1);
+		lv2_atom_forge_path(&atom_forge, currentModelPath.c_str(), (uint32_t)currentModelPath.length() + 1);
 
-                lv2_atom_forge_pop(&atom_forge, &frame);
-        }
-
-        void Plugin::scan_model_directory(const std::string& path)
-        {
-                namespace fs = std::filesystem;
-                fs::path p(path);
-                modelList.clear();
-                if (p.empty())
-                        return;
-
-                fs::path dir = p.parent_path();
-                if (!fs::exists(dir))
-                        return;
-
-                for (const auto& entry : fs::directory_iterator(dir))
-                {
-                        if (!entry.is_regular_file())
-                                continue;
-
-                        auto ext = entry.path().extension().string();
-                        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-                        if (ext == ".nam" || ext == ".nammodel" || ext == ".json" || ext == ".aidax" || ext == ".aidadspmodel")
-                        {
-                                modelList.push_back(entry.path().string());
-                        }
-                }
-
-                std::sort(modelList.begin(), modelList.end());
-
-                currentModelIndex = -1;
-                for (size_t i = 0; i < modelList.size(); ++i)
-                {
-                        if (modelList[i] == currentModelPath)
-                        {
-                                currentModelIndex = (int)i;
-                                break;
-                        }
-                }
-
-                prevModelSelect = currentModelIndex;
-        }
+		lv2_atom_forge_pop(&atom_forge, &frame);
+	}
 }
