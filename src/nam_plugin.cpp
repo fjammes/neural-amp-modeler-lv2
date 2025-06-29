@@ -236,21 +236,29 @@ namespace NAM {
                         }
                 }
 
-                // MIDI-selectable model index
-                if (ports.model_select && !modelList.empty())
-                {
-                        int idx = static_cast<int>(*ports.model_select + 0.5f);
-                        if (idx >= 0 && idx < (int)modelList.size() && idx != prevModelSelect)
-                        {
-                                prevModelSelect = idx;
-                                currentModelIndex = idx;
+               // MIDI-selectable model index
+               if (ports.model_select && !modelList.empty())
+               {
+                       int idx = static_cast<int>(*ports.model_select + 0.5f);
 
-                                LV2LoadModelMsg msg = { kWorkTypeLoad, {} };
-                                strncpy(msg.path, modelList[idx].c_str(), MAX_FILE_NAME);
-                                msg.path[MAX_FILE_NAME - 1] = '\0';
-                                schedule->schedule_work(schedule->handle, sizeof(msg), &msg);
-                        }
-                }
+                       if (idx < 0)
+                               idx = 0;
+
+                       int maxIdx = static_cast<int>(modelList.size()) - 1;
+                       if (idx > maxIdx)
+                               idx = maxIdx;
+
+                       if (idx != prevModelSelect)
+                       {
+                               prevModelSelect = idx;
+                               currentModelIndex = idx;
+
+                               LV2LoadModelMsg msg = { kWorkTypeLoad, {} };
+                               strncpy(msg.path, modelList[idx].c_str(), MAX_FILE_NAME);
+                               msg.path[MAX_FILE_NAME - 1] = '\0';
+                               schedule->schedule_work(schedule->handle, sizeof(msg), &msg);
+                       }
+               }
 		}
 
 		float level;
