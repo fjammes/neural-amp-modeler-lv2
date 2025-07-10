@@ -184,7 +184,17 @@ namespace NAM {
                 assert(nam->currentModelPath.capacity() >= MAX_FILE_NAME + 1);
                 nam->scan_model_directory(nam->currentModelPath);
 
-		// send reply
+                // keep midi model_select parameter in sync when the model is
+                // changed via the GUI. Saturate to zero if the current model
+                // could not be found in the list.
+                if (nam->ports.model_select) {
+                        int idx = nam->currentModelIndex;
+                        if (idx < 0)
+                                idx = 0;
+                        *(nam->ports.model_select) = static_cast<float>(idx);
+                }
+
+                // send reply
 		nam->schedule->schedule_work(nam->schedule->handle, sizeof(reply), &reply);
 
 		// report change to host/ui
