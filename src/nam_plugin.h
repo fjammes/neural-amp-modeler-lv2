@@ -89,6 +89,7 @@ namespace NAM {
 		void process(uint32_t n_samples) noexcept;
 
                 void write_current_path();
+                void sync_model_select_port() noexcept;
                 void scan_model_directory(const std::string& path);
 
 		static uint32_t options_get(LV2_Handle instance, LV2_Options_Option* options);

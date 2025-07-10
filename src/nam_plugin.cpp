@@ -184,15 +184,9 @@ namespace NAM {
                 assert(nam->currentModelPath.capacity() >= MAX_FILE_NAME + 1);
                 nam->scan_model_directory(nam->currentModelPath);
 
-                // keep midi model_select parameter in sync when the model is
-                // changed via the GUI. Saturate to zero if the current model
-                // could not be found in the list.
-                if (nam->ports.model_select) {
-                        int idx = nam->currentModelIndex;
-                        if (idx < 0)
-                                idx = 0;
-                        *(nam->ports.model_select) = static_cast<float>(idx);
-                }
+               // keep MIDI model_select parameter in sync when the model is
+               // changed via the GUI
+               nam->sync_model_select_port();
 
                 // send reply
 		nam->schedule->schedule_work(nam->schedule->handle, sizeof(reply), &reply);
@@ -497,7 +491,7 @@ namespace NAM {
 
         void Plugin::write_current_path()
         {
-		LV2_Atom_Forge_Frame frame;
+                LV2_Atom_Forge_Frame frame;
 
 		lv2_atom_forge_frame_time(&atom_forge, 0);
 		lv2_atom_forge_object(&atom_forge, &frame, 0, uris.patch_Set);
@@ -508,6 +502,18 @@ namespace NAM {
                 lv2_atom_forge_path(&atom_forge, currentModelPath.c_str(), (uint32_t)currentModelPath.length() + 1);
 
                 lv2_atom_forge_pop(&atom_forge, &frame);
+        }
+
+        void Plugin::sync_model_select_port() noexcept
+        {
+                if (ports.model_select)
+                {
+                        int idx = currentModelIndex;
+                        if (idx < 0)
+                                idx = 0;
+
+                        *(ports.model_select) = static_cast<float>(idx);
+                }
         }
 
         void Plugin::scan_model_directory(const std::string& path)
@@ -547,6 +553,8 @@ namespace NAM {
                         }
                 }
 
-                prevModelSelect = currentModelIndex;
+               prevModelSelect = currentModelIndex;
+
+                sync_model_select_port();
         }
 }
