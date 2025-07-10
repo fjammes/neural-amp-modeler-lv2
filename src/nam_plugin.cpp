@@ -188,6 +188,7 @@ namespace NAM {
                // changed via the GUI
                nam->sync_model_select_port();
 
+
                 // send reply
 		nam->schedule->schedule_work(nam->schedule->handle, sizeof(reply), &reply);
 
