@@ -6,6 +6,7 @@
 #include <filesystem>
 
 #include "nam_plugin.h"
+#include "log.h"
 
 #define SMOOTH_EPSILON .0001f
 
@@ -55,7 +56,7 @@ namespace NAM {
 			else if (std::string(features[i]->URI) == std::string(LV2_OPTIONS__options))
 				options = static_cast<LV2_Options_Option*>(features[i]->data);
 		}
-	
+
 		lv2_log_logger_set_map(&logger, map);
 
 		if (!map)
@@ -169,6 +170,7 @@ namespace NAM {
 	// runs on RT, right after process(), must not block or [de]allocate memory
 	LV2_Worker_Status Plugin::work_response(LV2_Handle instance, uint32_t size,	const void* data)
 	{
+		plugin_log("work_response:");
 		if (*(const LV2WorkType*)data != kWorkTypeSwitch)
 			return LV2_WORKER_ERR_UNKNOWN;
 
@@ -179,14 +181,14 @@ namespace NAM {
 		LV2FreeModelMsg reply = { kWorkTypeFree, nam->currentModel };
 
 		// swap current model with new one
-                nam->currentModel = msg->model;
-                nam->currentModelPath = msg->path;
-                assert(nam->currentModelPath.capacity() >= MAX_FILE_NAME + 1);
-                nam->scan_model_directory(nam->currentModelPath);
+		nam->currentModel = msg->model;
+		nam->currentModelPath = msg->path;
+		assert(nam->currentModelPath.capacity() >= MAX_FILE_NAME + 1);
+		nam->scan_model_directory(nam->currentModelPath);
 
-               // keep MIDI model_select parameter in sync when the model is
-               // changed via the GUI
-               nam->sync_model_select_port();
+		// keep MIDI model_select parameter in sync when the model is
+		// changed via the GUI
+		nam->sync_model_select_port();
 
 
                 // send reply
@@ -377,7 +379,7 @@ namespace NAM {
 		return LV2_OPTIONS_SUCCESS;
 	}
 
-	LV2_State_Status Plugin::save(LV2_Handle instance, LV2_State_Store_Function store, LV2_State_Handle handle, 
+	LV2_State_Status Plugin::save(LV2_Handle instance, LV2_State_Store_Function store, LV2_State_Handle handle,
 		uint32_t flags, const LV2_Feature* const* features)
 	{
 		auto nam = static_cast<NAM::Plugin*>(instance);
@@ -420,7 +422,7 @@ namespace NAM {
 		return LV2_STATE_SUCCESS;
 	}
 
-	LV2_State_Status Plugin::restore(LV2_Handle instance, LV2_State_Retrieve_Function retrieve, LV2_State_Handle handle, 
+	LV2_State_Status Plugin::restore(LV2_Handle instance, LV2_State_Retrieve_Function retrieve, LV2_State_Handle handle,
 		uint32_t flags, const LV2_Feature* const* features)
 	{
 		auto nam = static_cast<NAM::Plugin*>(instance);
@@ -523,43 +525,43 @@ namespace NAM {
 
         void Plugin::scan_model_directory(const std::string& path)
         {
-                namespace fs = std::filesystem;
-                fs::path p(path);
-                modelList.clear();
-                if (p.empty())
-                        return;
+			namespace fs = std::filesystem;
+			fs::path p(path);
+			modelList.clear();
+			if (p.empty())
+					return;
 
-                fs::path dir = p.parent_path();
-                if (!fs::exists(dir))
-                        return;
+			fs::path dir = p.parent_path();
+			if (!fs::exists(dir))
+					return;
 
-                for (const auto& entry : fs::directory_iterator(dir))
-                {
-                        if (!entry.is_regular_file())
-                                continue;
+			for (const auto& entry : fs::directory_iterator(dir))
+			{
+					if (!entry.is_regular_file())
+							continue;
 
-                        auto ext = entry.path().extension().string();
-                        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-                        if (ext == ".nam" || ext == ".nammodel" || ext == ".json" || ext == ".aidax" || ext == ".aidadspmodel")
-                        {
-                                modelList.push_back(entry.path().string());
-                        }
-                }
+					auto ext = entry.path().extension().string();
+					std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+					if (ext == ".nam" || ext == ".nammodel" || ext == ".json" || ext == ".aidax" || ext == ".aidadspmodel")
+					{
+							modelList.push_back(entry.path().string());
+					}
+			}
 
-                std::sort(modelList.begin(), modelList.end());
+			std::sort(modelList.begin(), modelList.end());
 
-                currentModelIndex = -1;
-                for (size_t i = 0; i < modelList.size(); ++i)
-                {
-                        if (modelList[i] == currentModelPath)
-                        {
-                                currentModelIndex = (int)i;
-                                break;
-                        }
-                }
+			currentModelIndex = -1;
+			for (size_t i = 0; i < modelList.size(); ++i)
+			{
+					if (modelList[i] == currentModelPath)
+					{
+							currentModelIndex = (int)i;
+							break;
+					}
+			}
 
-               prevModelSelect = currentModelIndex;
+			prevModelSelect = currentModelIndex;
 
-                sync_model_select_port();
+			sync_model_select_port();
         }
 }

@@ -88,9 +88,9 @@ namespace NAM {
 		void set_max_buffer_size(int size) noexcept;
 		void process(uint32_t n_samples) noexcept;
 
-                void write_current_path();
-                void sync_model_select_port() noexcept;
-                void scan_model_directory(const std::string& path);
+		void write_current_path();
+		void sync_model_select_port() noexcept;
+		void scan_model_directory(const std::string& path);
 
 		static uint32_t options_get(LV2_Handle instance, LV2_Options_Option* options);
 		static uint32_t options_set(LV2_Handle instance, const LV2_Options_Option* options);
@@ -99,7 +99,7 @@ namespace NAM {
 			uint32_t size, const void* data);
 		static LV2_Worker_Status work_response(LV2_Handle instance, uint32_t size, const void* data);
 
-		static LV2_State_Status save(LV2_Handle instance, LV2_State_Store_Function store, LV2_State_Handle handle, uint32_t flags, 
+		static LV2_State_Status save(LV2_Handle instance, LV2_State_Store_Function store, LV2_State_Handle handle, uint32_t flags,
 			const LV2_Feature* const* features);
 		static LV2_State_Status restore(LV2_Handle instance, LV2_State_Retrieve_Function retrieve, LV2_State_Handle handle, uint32_t flags,
 			const LV2_Feature* const* features);

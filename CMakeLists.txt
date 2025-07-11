@@ -37,7 +37,7 @@ configure_file(resources/manifest.ttl.in neural_amp_modeler.lv2/manifest.ttl)
 configure_file(resources/neural_amp_modeler.ttl.in neural_amp_modeler.lv2/neural_amp_modeler.ttl)
 
 install (DIRECTORY ${CMAKE_BINARY_DIR}/neural_amp_modeler.lv2
-       DESTINATION ${LIB_INSTALL_DIR}/lv2
+       DESTINATION ${CMAKE_INSTALL_PREFIX}
 )
 
 set(CPACK_GENERATOR "DEB")
